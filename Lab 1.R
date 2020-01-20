@@ -49,7 +49,10 @@ p + geom_point() +
 # The dollar() changes the labels of x-axis to dollors.
 
 # How can you find other ways of relabeling the scales when using scale_x_log10() ?
-# ???
+# ？change the value after scales:: , to number for instance.
+p + geom_point() +
+  geom_smooth(method = "lm") +
+  scale_x_log10(labels = scales::number)
 
 # Try it: Write the above sentence for the original call aes(x = gdpPercap, y = lifeExp, color = 'yellow')
 p <- ggplot(data = gapminder,
@@ -68,10 +71,11 @@ p <- ggplot(data = gapminder,
 p + geom_point() + geom_smooth(color = "orange", se = FALSE, size = 8, method = "lm") + scale_x_log10()
 # Try it: Write down what all those arguments in geom_smooth(...) do
 # geom_smooth(...) generates a linear regression line for the given data and plot the line.
+# se : Display confidence interval around smooth?  color: color of the regression line.  method="lm" : a function of smooth called lm.
 
-p + geom_point(alpha = 0.3) +
-  geom_smooth(method = "gam") +
-  scale_x_log10(labels = scales::dollar) +
+p + geom_point(alpha = 0.3) +  #tranparency
+  geom_smooth(method = "gam") +   #one of method function
+  scale_x_log10(labels = scales::dollar) +    #change unit to dollar.
   labs(x = "GDP Per Capita", y = "Life Expectancy in Years",
        title = "Economic Growth and Life Expectancy", subtitle = "Data Points are country-years", caption = "Source: Gapminder")
 
@@ -82,7 +86,8 @@ p + geom_point()
 p + geom_point() + scale_x_log10(labels = dollar)
 p + geom_point() + scale_x_log10(labels = dollar) + geom_smooth()
 # Try it: What does fill = continent do? What do you think about the match of colors between lines and error bands?
-# ？？？
+# color the error bands of the regression line. 
+# match of colors between lines and error bands are important, in this way people can easily distinguish different lines and its error bands. 
 
 p <- ggplot(data = gapminder,
             mapping = aes(x = gdpPercap, y = lifeExp))
@@ -100,7 +105,7 @@ p + geom_point(mapping = aes(color = continent)) +
   geom_smooth(mapping = aes(color = continent), method = "gam")
 # Try it: What is bad about the following example, assuming the graph is the one we want?
 # The above codes make regression line for each continent, and this makes the picture look very confusing. So we should set aesthetics at the top level rather than at the individual geometry level.
-
+# Adjust. Setting aesthetics at the individual geometry level instead of top level make the code very confusing, and you have to set aesthetics at every single line which increase a lot of works.
 # Ecercise 2
 
 bank_df <- read.csv("bank.csv")
