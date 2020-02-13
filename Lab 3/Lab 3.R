@@ -127,11 +127,11 @@ fit_6 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlr
 fit_7 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual, data=train_data)
 fit_8 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual, data=train_data)
 fit_9 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt, data=train_data)
-fit_10 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street, data=train_data)
-fit_11 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street +MSZoning, data=train_data)
-fit_12 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea, data=train_data)
-fit_13 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea+ExterQual, data=train_data)
-fit_14 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea+ExterQual+BsmtQual, data=train_data)
+fit_10 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +MoSold, data=train_data)
+fit_11 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +MoSold , data=train_data)
+fit_12 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +MoSold+GarageArea, data=train_data)
+fit_13 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +MoSold+GarageArea+ExterQual, data=train_data)
+fit_14 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +MoSold+GarageArea+ExterQual+BsmtQual, data=train_data)
 
 model_list = list(fit_0, fit_1, fit_2, fit_3, fit_4, fit_5, fit_6, fit_7, fit_8, fit_9, fit_10, fit_11, fit_12, fit_13, fit_14)
 #model complexity
