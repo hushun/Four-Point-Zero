@@ -1,0 +1,191 @@
+
+###Exercise 1
+
+
+#load the data file
+rawdata=read.csv("ames.csv",header=TRUE)
+#Drop the variables OverallCond and OverallQual
+rawdata$OverallCond<-NULL
+rawdata$OverallQual<-NULL
+
+#remove several columns which are not important from the rawdata
+library(MASS)
+data=rawdata
+data$Id<-NULL
+data$Alley<-NULL
+data$LandContour<-NULL
+data$Utilities<-NULL
+data$LandSlope<-NULL
+data$PoolQC<-NULL
+data$Fence<-NULL
+data$MiscFeature<-NULL
+data$FireplaceQu<-NULL
+
+###data cleaning
+#find the proportion of  na values in each columns
+datana=data.frame(matrix(1:length(data),nrow=1,ncol=length(data)))
+
+for (i in 1:length(data)){
+  datana[i]=sum(is.na(data[i]))/nrow(data)
+}
+
+colnames(datana)=colnames(data)
+#print result
+datana
+
+#fill nan values with 0 in "LotFrontage" column
+data$LotFrontage[is.na(data$LotFrontage)]=0
+#remove rows that contains nan values
+data2=na.omit(data)
+formu=paste(colnames(data)[1:(length(data)-1)],collapse="+")
+formu=paste("SalePrice",formu,sep="~")
+fit_all=lm(formu,data=data2)
+#forward selection
+forward_fit=step(fit_all, direction="forward")
+#print the results of forward selection
+summary(forward_fit)
+
+#print the class of each column
+str(data2)
+
+# calculate the complexity of models
+get_complexity = function(model) {
+  length(coef(model)) - 1
+}
+
+
+#calculate rmse of models
+rmse = function(actual, predicted) {
+  sqrt(mean((actual - predicted) ^ 2))
+}
+
+get_rmse = function(model, data, response) {
+  rmse(actual = subset(data, select = response, drop = TRUE),
+       predicted = predict(model, data))
+}
+
+# a series of models up to complexity length 15
+fit_0 = lm(SalePrice ~ 1, data = data2)
+fit_1 = lm(SalePrice ~ LotArea, data=data2)
+fit_2 = lm(SalePrice ~ LotArea + YearRemodAdd, data=data2)
+fit_3 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1, data=data2)
+fit_4 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF, data=data2)
+fit_5 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF, data=data2)
+fit_6 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + 
+             X2ndFlrSF, data=data2)
+fit_7 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + 
+             KitchenQual, data=data2)
+fit_8 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF +
+             KitchenQual +GarageQual, data=data2)
+fit_9 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF +
+             KitchenQual +GarageQual + YearBuilt, data=data2)
+fit_10 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF +
+              KitchenQual +GarageQual + YearBuilt +Street, data=data2)
+fit_11 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + 
+              KitchenQual +GarageQual + YearBuilt +Street +MSZoning, data=data2)
+fit_12 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + 
+              KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea , data=data2)
+fit_13 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + 
+              KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea +ExterQual, data=data2)
+fit_14 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF +
+              KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea +ExterQual+
+              BsmtQual, data=data2)
+
+
+model_list = list(fit_0, fit_1, fit_2, fit_3, fit_4, fit_5, fit_6, fit_7, fit_8, fit_9, fit_10, fit_11, fit_12, fit_13, fit_14)
+model_complexity = sapply(model_list, get_complexity)
+model_complexity
+lr_rmse = sapply(model_list, get_rmse, data = data2, response = "SalePrice")
+lr_rmse
+
+#plot
+plot(model_complexity, lr_rmse, type = "b",
+     ylim = c(min(lr_rmse) - 1000,
+              max(lr_rmse) + 1000),
+     col = "dodgerblue",
+     xlab = "Model Size",
+     ylab = "RMSE")
+lines(model_complexity, lr_rmse, type = "b", col = "darkorange")
+
+###Exercise 2
+
+set.seed(123)
+num_obs = nrow(data2)
+#50% of data2 as train dataset, and the other 50% as test dataset
+train_index = sample(num_obs, size = trunc(0.50 * num_obs))
+train_data = data2[train_index, ]
+test_data = data2[-train_index, ]
+
+# replace data2 with train_data
+fit_0 = lm(SalePrice ~ 1, data = train_data)
+fit_1 = lm(SalePrice ~ LotArea, data=train_data)
+fit_2 = lm(SalePrice ~ LotArea + YearRemodAdd, data=train_data)
+fit_3 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1, data=train_data)
+fit_4 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF, data=train_data)
+fit_5 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF, data=train_data)
+fit_6 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF, data=train_data)
+fit_7 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual, data=train_data)
+fit_8 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual, data=train_data)
+fit_9 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt, data=train_data)
+fit_10 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street, data=train_data)
+fit_11 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street +MSZoning, data=train_data)
+fit_12 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea, data=train_data)
+fit_13 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea+ExterQual, data=train_data)
+fit_14 = lm(SalePrice ~ LotArea + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + X1stFlrSF + X2ndFlrSF + KitchenQual +GarageQual + YearBuilt +Street+MSZoning +GarageArea+ExterQual+BsmtQual, data=train_data)
+
+model_list = list(fit_0, fit_1, fit_2, fit_3, fit_4, fit_5, fit_6, fit_7, fit_8, fit_9, fit_10, fit_11, fit_12, fit_13, fit_14)
+#model complexity
+model_complexity = sapply(model_list, get_complexity)
+#train data rmse
+lr_train_rmse = sapply(model_list, get_rmse, data = train_data, response = "SalePrice")
+#test data rmse
+lr_test_rmse = sapply(model_list, get_rmse, data = test_data, response = "SalePrice")
+
+#Plot
+plot(model_complexity, lr_train_rmse, type = "b",
+     ylim = c(min(c(lr_train_rmse, lr_test_rmse)) - 0.02,
+              max(c(lr_train_rmse, lr_test_rmse)) + 0.02),
+     col = "dodgerblue",
+     xlab = "Model Size",
+     ylab = "RMSE")
+lines(model_complexity, lr_test_rmse, type = "b", col = "darkorange")
+text.legend = c("train_RMSE","test_RMSE")
+legend("topright", legend = text.legend, lty = c(1,1), col = c( "dodgerblue","darkorange"))
+
+###Random Forest model to predict
+#install.packages("randomForest")
+library(randomForest)
+
+#fit the Random Forest model
+rf_fit= randomForest(SalePrice~MSSubClass+MSZoning+LotFrontage+LotArea+Street+LotShape+LotConfig+
+                       Neighborhood+Condition1+Condition2+BldgType+HouseStyle+YearBuilt+YearRemodAdd+
+                       RoofStyle+RoofMatl+Exterior1st+Exterior2nd+MasVnrType+MasVnrArea+ExterQual+
+                       ExterCond+Foundation+BsmtQual+BsmtCond+BsmtExposure+BsmtFinType1+BsmtFinSF1+
+                       BsmtFinType2+BsmtFinSF2+BsmtUnfSF+TotalBsmtSF+Heating+HeatingQC+CentralAir+
+                       Electrical+X1stFlrSF+X2ndFlrSF+LowQualFinSF+GrLivArea+BsmtFullBath+BsmtHalfBath+
+                       FullBath+HalfBath+BedroomAbvGr+KitchenAbvGr+KitchenQual+TotRmsAbvGrd+Functional+
+                       Fireplaces+GarageType+GarageYrBlt+GarageFinish+GarageCars+GarageArea+GarageQual+
+                       GarageCond+PavedDrive+WoodDeckSF+OpenPorchSF+EnclosedPorch+X3SsnPorch+ScreenPorch+
+                       PoolArea+MiscVal+MoSold+YrSold+SaleType+SaleCondition, data=train_data,importance=TRUE, ntree=1000)
+
+##save the model
+#save(rf_fit,file="rf_fit.RData")
+
+##load the model
+#load("rf_fit.RData")
+
+pred_rf=predict(rf_fit,newdata = test_data)
+pred_rf_train=predict(rf_fit,newdata = train_data)
+
+rf_train_rmse=rmse(train_data$SalePrice,pred_rf_train)
+rf_train_rmse
+
+rf_test_rmse=rmse(test_data$SalePrice,pred_rf)
+rf_test_rmse
+
+#importance matrix
+im_ma=importance(rf_fit)
+im_ma[order(im_ma[,1],decreasing=T),]
+
+
+
