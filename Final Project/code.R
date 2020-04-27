@@ -21,6 +21,7 @@ AllIncrease<-AllData %>%
                                AllDeath=sum(death, na.rm=TRUE)
                                )
 
+###plot all the people who are Positive, Death and Recovered
 Figure1<-AllIncrease%>%select(date,AllPositive,AllRecovered, AllDeath)%>%
   gather(key = flag, value = value, AllDeath, AllPositive,AllRecovered)
 
@@ -31,6 +32,7 @@ Figure1%>%ggplot(aes(x=date, y=value))+
   theme(plot.title = element_text(hjust = 0.5))
 
 
+###plot daily Increase of the people who are Positive, Death and Recovered
 Figure2<-AllIncrease%>%
   select(date,AllDeathIncrease,AllPositiveIncrease)%>%
   gather(key = flag, value = value, AllDeathIncrease, AllPositiveIncrease)
@@ -52,6 +54,7 @@ AllDataTable<-
   AllData %>%  inner_join(States, by = c("StateCode" = "StateCode")) 
 
 
+###plot  Positive and  Death in different states
 Figure3<-AllDataTable %>% filter(date=="2020-04-23")%>% 
   select(State, death, positive)
 
@@ -84,5 +87,23 @@ plot(fit1)
 
 shapiro.test(residuals(fit1))
 
- 
+#machine learning technique: clustering
+ChooseTable<-AllDataTable%>%filter(date=="2020-04-23")%>%
+  select(death, positive, positiveIncrease, deathIncrease)
+
+ChooseName<-AllDataTable%>%filter(date=="2020-04-23")%>%
+  select(State)
+
+CTable<-as.matrix(ChooseTable)
+rownames(CTable)<-ChooseName$State
+CTable
+
+#scale the data
+CTable_scaled<-scale(CTable)
+
+#divide the 50 states into 5 culsters
+diff<-dist(CTable_scaled)
+hc <- hclust(diff, method="average")
+plot(hc,hang=-1)
+rect.hclust(hc,  k=5)
 
